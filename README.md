@@ -1,7 +1,3 @@
-Com base na análise dos arquivos do projeto `catalogo_service`, aqui está uma proposta de arquivo `README.md` que descreve o projeto.
-
------
-
 # Serviço de Catálogo (catalogo\_service)
 
 > Serviço de catálogo para API de biblioteca virtual de sistema distribuído.
