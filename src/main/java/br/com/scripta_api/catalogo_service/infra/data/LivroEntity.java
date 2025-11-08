@@ -21,7 +21,7 @@ public class LivroEntity {
     @Column(nullable = false)
     private String titulo;
     private String autor;
-    private Date anoPublicacao;
+    private Integer anoPublicacao;
     @Column(nullable = false)
     private Integer quantidadeTotal;
     @Column(nullable = false)
