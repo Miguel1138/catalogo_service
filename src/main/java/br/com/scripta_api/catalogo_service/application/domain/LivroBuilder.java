@@ -27,7 +27,7 @@ public final class LivroBuilder {
     }
 
     public LivroBuilder quantidadeDisponivel(Integer quantidadeDisponivel) {
-        livro.setQuantidadeDsiponivel(quantidadeDisponivel);
+        livro.setQuantidadeDisponivel(quantidadeDisponivel);
         return this;
     }
 

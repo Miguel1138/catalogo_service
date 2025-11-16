@@ -66,7 +66,7 @@ public class Livro {
         return quantidadeDsiponivel;
     }
 
-    public void setQuantidadeDsiponivel(Integer quantidadeDsiponivel) {
+    public void setQuantidadeDisponivel(Integer quantidadeDisponivel) {
         if(this.quantidadeDsiponivel == 0) {
 
         }
