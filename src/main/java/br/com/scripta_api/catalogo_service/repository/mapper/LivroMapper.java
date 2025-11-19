@@ -1,6 +1,8 @@
 package br.com.scripta_api.catalogo_service.repository.mapper;
 
+
 import br.com.scripta_api.catalogo_service.application.domain.Livro;
+import br.com.scripta_api.catalogo_service.application.domain.LivroBuilder;
 import br.com.scripta_api.catalogo_service.infra.data.LivroEntity;
 import org.springframework.stereotype.Component;
 
@@ -13,50 +15,33 @@ public class LivroMapper {
             return null;
         }
 
-        Livro domain = new Livro();
-        domain.setId(savedEntity.getId());
-        domain.setTitulo(savedEntity.getTitulo());
-        domain.setAutor(savedEntity.getAutor());
-        domain.setIsbn(savedEntity.getIsbn());
-        domain.setAnoPublicacao(savedEntity.getAnoPublicacao());
-        domain.setQuantidadeTotal(savedEntity.getQuantidadeTotal());
-        domain.setQuantidadeDisponivel(savedEntity.getQuantidadeDisponivel());
-
-        return domain;
+        return LivroBuilder.builder()
+                .id(savedEntity.getId())
+                .titulo(savedEntity.getTitulo())
+                .autor(savedEntity.getAutor())
+                .isbn(savedEntity.getIsbn())
+                .anoPublicacao(savedEntity.getAnoPublicacao())
+                .quantidadeTotal(savedEntity.getQuantidadeTotal())
+                .quantidadeDisponivel(savedEntity.getQuantidadeDisponivel())
+                .build();
     }
+
 
     public LivroEntity toEntity(Livro domain) {
         if (domain == null) {
             return null;
         }
 
-        LivroEntity entity = new LivroEntity();
-        entity.setId(domain.getId());
-        entity.setTitulo(domain.getTitulo());
-        entity.setAutor(domain.getAutor());
-        entity.setIsbn(domain.getIsbn());
-        entity.setAnoPublicacao(domain.getAnoPublicacao());
-        entity.setQuantidadeTotal(domain.getQuantidadeTotal());
-        entity.setQuantidadeDisponivel(domain.getQuantidadeDsiponivel());
-
-        return  entity;
+        return LivroEntity.builder()
+                .id(domain.getId())
+                .titulo(domain.getTitulo())
+                .autor(domain.getAutor())
+                .isbn(domain.getIsbn())
+                .anoPublicacao(domain.getAnoPublicacao())
+                .quantidadeTotal(domain.getQuantidadeTotal())
+                .quantidadeDisponivel(domain.getQuantidadeDsiponivel())
+                .build();
     }
 
-    public void updateEntityFromDomain(Livro domain, LivroEntity entity) {
-        if (domain == null || entity == null) {
-            return;
-        }
-
-
-
-
-        entity.setTitulo(domain.getTitulo());
-        entity.setAutor(domain.getAutor());
-        entity.setIsbn(domain.getIsbn());
-        entity.setAnoPublicacao(domain.getAnoPublicacao());
-        entity.setQuantidadeTotal(domain.getQuantidadeTotal());
-
-
-        entity.setQuantidadeDisponivel(domain.getQuantidadeDsiponivel());
-    }
 }
+

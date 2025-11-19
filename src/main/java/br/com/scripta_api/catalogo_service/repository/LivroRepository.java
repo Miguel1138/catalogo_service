@@ -73,9 +73,9 @@ public class LivroRepository implements LivroService {
     @Override
     @Transactional
     public Livro atualizarLivro(Long id, Livro livroDomain) {
-        LivroEntity existing = repository.findById(id)
-                .orElseThrow(() -> new LivroNaoEncontradoException("Livro não encontrado com ID: " + id));
-
+        if (!repository.existsById(id)) {
+            throw new LivroNaoEncontradoException("Livro não encontrado com ID: " + id);
+        }
 
         repository.findByIsbn(livroDomain.getIsbn()).ifPresent(entity -> {
             if (!entity.getId().equals(id)) {
@@ -83,13 +83,13 @@ public class LivroRepository implements LivroService {
             }
         });
 
-        // Deixar o mapper fazer o trabalho de atualização
-        mapper.updateEntityFromDomain(livroDomain, existing);
+        LivroEntity entityToUpdate = mapper.toEntity(livroDomain);
+        entityToUpdate.setId(id);
 
-        LivroEntity updated = repository.save(existing);
+        LivroEntity updated = repository.save(entityToUpdate);
+
         return mapper.toDomain(updated);
     }
-
 
     @Override
     @Transactional
@@ -130,3 +130,4 @@ public class LivroRepository implements LivroService {
         repository.deleteById(id);
     }
 }
+
