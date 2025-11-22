@@ -27,7 +27,7 @@ public class LivroController {
     private final GoogleBooksApiService apiService;
 
     @PostMapping
-    public LivroResponse criarLivro(CriarLivroRequest request) {
+    public LivroResponse criarLivro(@RequestBody CriarLivroRequest request) {
         return LivroResponse.fromDomain(livroService.criarLivro(
                         LivroBuilder.builder()
                                 .titulo(request.getTitulo())
@@ -35,7 +35,7 @@ public class LivroController {
                                 .isbn(request.getIsbn())
                                 .anoPublicacao(request.getAnoPublicacao())
                                 .quantidadeTotal(request.getQuantidadeTotal())
-                                .quantidadeDisponivel(request.getQuantidadeDsiponivel())
+                                .quantidadeDisponivel(request.getQuantidadeDisponivel())
                                 .build()
                 )
         );

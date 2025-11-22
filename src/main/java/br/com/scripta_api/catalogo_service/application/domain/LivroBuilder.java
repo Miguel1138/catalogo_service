@@ -49,7 +49,10 @@ public final class LivroBuilder {
     }
 
     public Livro build() {
-        if (livro.getQuantidadeDsiponivel() <= 0 || livro.getQuantidadeTotal() < 0) {
+        if (livro.getQuantidadeDsiponivel() <= 0
+                || livro.getQuantidadeTotal() < 0
+                || livro.getQuantidadeDsiponivel() == null
+                || livro.getQuantidadeTotal() == null) {
             throw new EstoqueInsuficienteException("Livro sem estoque");
         }
 

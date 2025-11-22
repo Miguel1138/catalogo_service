@@ -26,5 +26,5 @@ public class CriarLivroRequest {
 
     @NotBlank(message = "O quantidade total não pode estar vazio")
     @Min(value = 0, message = "quantidade total não pode ser zero")
-    private Integer quantidadeDsiponivel;
+    private Integer quantidadeDisponivel;
 }

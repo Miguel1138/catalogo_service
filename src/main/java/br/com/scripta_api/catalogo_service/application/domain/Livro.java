@@ -64,7 +64,7 @@ public class Livro {
         return quantidadeDsiponivel;
     }
 
-    public void setQuantidadeDsiponivel(Integer quantidadeDsiponivel) {
+    public void setQuantidadeDisponivel(Integer quantidadeDsiponivel) {
         this.quantidadeDsiponivel = quantidadeDsiponivel;
     }
 
