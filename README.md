@@ -1,97 +1,155 @@
-# Serviço de Catálogo (catalogo\_service)
+# (Projeto) catalogo_service
 
-> Serviço de catálogo para API de biblioteca virtual de sistema distribuído.
+Este projeto é o microsserviço de catálogo de livros para a API "Scripta" de biblioteca universitária. Ele é responsável pelo gerenciamento do acervo, controle de estoque e integração com APIs externas (Google Books) para importação de metadados.
 
-## Visão Geral
+A aplicação é construída em **Java 21** com **Spring Boot 3.5.7** e atua como um **OAuth2 Resource Server**, utilizando **Spring WebFlux** para integrações reativas e **Spring Data JPA** para persistência.
 
-Este projeto é um microserviço Spring Boot responsável pelo gerenciamento do catálogo de livros de uma biblioteca virtual. Ele foi desenhado para funcionar como parte de um sistema distribuído, atuando como um **OAuth2 Resource Server**. Sua principal função é gerenciar a entidade `Livro`, controlar seu estoque e permitir a integração com APIs externas (como o Google Books) para importação de dados.
+## Stack de Tecnologias
 
-O serviço está configurado para rodar na porta `8082`.
+| Categoria | Tecnologia | Justificativa / Uso |
+| :--- | :--- | :--- |
+| **Core** | Java 21 | Linguagem principal da aplicação. |
+| **Framework** | Spring Boot 3.5.7 | Framework base (Web, Data, Security). |
+| **Segurança** | Spring Security | Configurado como OAuth2 Resource Server. |
+| | Nimbus JOSE + JWT | Decodificação e validação de tokens JWT. |
+| **Integração** | Spring WebFlux | Cliente HTTP (`WebClient`) para consumir a Google Books API. |
+| **Persistência** | Spring Data JPA | Camada de acesso a dados. |
+| **Banco de Dados** | PostgreSQL | Banco de dados relacional para produção. |
+| | H2 Database | Banco de dados em memória para testes. |
+| **Utilitários** | Lombok | Redução de código boilerplate (ex: @Data, @Builder). |
+| | Spring Validation | Validação de DTOs de entrada (ex: @NotBlank, @Min). |
 
-## Status do Projeto
+## Arquitetura (Design)
 
-⚠️ **Em Desenvolvimento.**
+A arquitetura do projeto segue os princípios da **Clean Architecture**. O modelo de **Domínio** (`Livro`) é isolado da camada de infraestrutura (`LivroEntity`).
 
-A estrutura do projeto está definida, mas a implementação principal ainda está pendente. A maioria dos arquivos de serviço, configuração e controle contém comentários `TODO` que descrevem a lógica de negócios e a implementação esperada.
+* **Domínio**: Contém as regras de negócio e entidades puras (`Livro`, `LivroBuilder`).
+* **Gateways**: Interfaces que definem as portas de entrada e saída (`LivroService`).
+* **Infraestrutura**: Implementações concretas, como o `LivroRepository` (que atua como Adapter para o `LivroEntityRepository` do JPA) e o `GoogleBooksApiService` (Adapter para integração externa).
+* **Mapper**: A classe `LivroMapper` é responsável por converter entre as entidades de banco e o domínio, garantindo o desacoplamento.
 
-## Arquitetura
+A segurança opera no modelo **Stateless** como um Resource Server, validando a assinatura dos JWTs recebidos através da chave secreta compartilhada.
 
-O projeto utiliza uma abordagem baseada em **Arquitetura Limpa (Clean Architecture) / Hexagonal**, separando claramente o domínio das preocupações de infraestrutura:
+## Configuração e Execução (IntelliJ IDEA)
 
-  * **`application/domain`**: Contém o modelo de domínio puro (`Livro`, `LivroBuilder`).
-  * **`application/gateways/service`**: Interfaces (Ports) que definem os casos de uso e contratos de serviço (`LivroService`).
-  * **`controller`**: Adaptadores Primários (API REST) que recebem requisições HTTP e as traduzem para chamadas de serviço.
-  * **`repository`**: Adaptadores Secundários (Database) que implementam as interfaces de serviço, tratando da persistência.
-  * **`api`**: Adaptadores Secundários (Web) para comunicação com APIs externas (ex: Google Books).
-  * **`infra`**: Camada de persistência de baixo nível (JPA Entities, Repositórios Spring Data).
+### 1. Pré-requisitos
 
-## Funcionalidades Pretendidas
+* Java 21 (JDK)
+* Uma instância do PostgreSQL rodando.
 
-  * CRUD completo de livros (Criar, Ler, Atualizar, Deletar).
-  * Busca de livros por título ou autor.
-  * Controle de estoque (incremento e decremento).
-  * Importação de livros por ISBN através de uma API externa (Google Books).
-  * Tratamento de exceções de negócio (Ex: `LivroNaoEncontrado`, `LivroJaCadastrado`, `EstoqueInsuficiente`).
+### 2. Configurando o IntelliJ IDEA
 
-## Tecnologias
+1.  **Abra o projeto:**
+    * Abra o projeto (a pasta `catalogo_service`) no IntelliJ IDEA.
+    * A IDE detectará o arquivo `pom.xml` e deve baixar automaticamente todas as dependências do Maven.
 
-  * **Java 21**
-  * **Spring Boot 3.5.7**
-  * **Persistência:** Spring Data JPA / Hibernate
-  * **Banco de Dados:** PostgreSQL (requerido)
-  * **Segurança:** Spring Security (OAuth2 Resource Server, JWT)
-  * **API Client:** Spring WebFlux (`WebClient`)
-  * **Build:** Apache Maven
-  * **Utilitários:** Lombok
+2.  **Configure as Variáveis de Ambiente:**
+    * A aplicação precisa de variáveis de ambiente para se conectar ao banco e validar a assinatura dos tokens (definidas em `application.properties`).
+    * No canto superior direito do IntelliJ, clique em `Edit Configurations...`.
+    * Na janela que abrir, localize a aplicação `CatalogoServiceApplication`.
+    * No campo **"Environment variables"**, adicione as seguintes chaves, substituindo pelos seus valores:
 
-## Segurança (Endpoints)
-
-O serviço é protegido como um **OAuth2 Resource Server** e espera um JWT válido em todas as requisições (exceto as públicas). A configuração de segurança lê a claim `roles` do token, esperando que os papéis já venham com o prefixo (ex: `ROLE_BIBLIOTECARIO`).
-
-Conforme os `TODO`s em `SecurityConfig.java`, as regras de autorização pretendidas são:
-
-  * **Públicos (`permitAll`)**
-      * `GET /livros`
-      * `GET /livros/{id}`
-      * `GET /livros/buscar`
-  * **Papel: `BIBLIOTECARIO`**
-      * `POST /livros` (Criar)
-      * `PUT /livros/**` (Atualizar)
-      * `DELETE /livros/**` (Deletar)
-      * `POST /livros/importar/**` (Importar)
-  * **Autenticado (Qualquer Papel)**
-      * `PUT /livros/{id}/estoque/decrementar`
-      * `PUT /livros/{id}/estoque/incrementar`
-
-## Configuração e Execução
-
-### Pré-requisitos
-
-1.  Java 21 (ou JDK compatível).
-2.  Maven.
-3.  Um banco de dados PostgreSQL em execução.
-4.  Um serviço de autenticação (externo a este projeto) que emita JWTs.
-
-### Variáveis de Ambiente
-
-Para executar a aplicação, as seguintes variáveis de ambiente são necessárias (conforme `application.properties`):
-
-  * `DB_CATALOG`: O nome do banco de dados no PostgreSQL.
-  * `POSTGRE_USERNAME`: Usuário do banco de dados.
-  * `POSTGRE_PASSWORD`: Senha do banco de dados.
-  * `JWT_SECRECT_KEY`: A chave secreta (exatamente a mesma usada pelo serviço de autenticação) para validar a assinatura do JWT.
-
-Adicionalmente, a configuração do `WebClient` (`WebClientConfig.java`) espera uma propriedade `api.externa.livros.url` para se conectar à API de livros, embora esta não esteja definida no `application.properties` fornecido.
-
-### Execução
-
-1.  Clone o repositório.
-2.  Configure as variáveis de ambiente.
-3.  Execute o build do Maven:
     ```bash
-    ./mvnw clean install
+    DB_CATALOG=nome_do_seu_banco_de_dados;
+    POSTGRE_USERNAME=seu_usuario_postgre;
+    POSTGRE_PASSWORD=sua_senha_postgre;
+    JWT_SECRECT_KEY=sua_chave_secreta_aqui
     ```
-4.  Inicie a aplicação:
-    ```bash
-    ./mvnw spring-boot:run
+
+    * *Opcional*: A URL da API do Google Books já possui um valor padrão, mas pode ser sobrescrita com `api.google.books.url`.
+    * Clique em "OK" para salvar.
+
+3.  **Execute a Aplicação:**
+    * Navegue até o arquivo `src/main/java/br/com/scripta_api/catalogo_service/CatalogoServiceApplication.java`.
+    * Clique no ícone verde "Play" ao lado da declaração da classe.
+    * A aplicação iniciará no console, rodando na porta **8082**.
+
+## API Endpoints (Contrato da API)
+
+### Módulo: Livros (`/livros`)
+
+#### `GET /livros`
+
+Lista todos os livros do acervo.
+
+* **Acesso**: Público.
+* **Response 200 OK** (`List<LivroResponse>`):
+
+    ```json
+    [
+      {
+        "id": 1,
+        "titulo": "Domain-Driven Design",
+        "autor": "Eric Evans",
+        "isbn": "9780321125217",
+        "anoPublicacao": 2003,
+        "quantidadeTotal": 5,
+        "quantidadeDsiponivel": 5
+      }
+    ]
     ```
+
+#### `GET /livros/buscar`
+
+Busca livros por palavra-chave (título ou autor).
+
+* **Acesso**: Público.
+* **Body (Raw String)**: `"Evans"`
+* **Response 200 OK**: Lista de livros filtrada.
+
+#### `POST /livros`
+
+Cadastra um novo livro manualmente.
+
+* **Acesso**: Autenticado. Requer Role: `BIBLIOTECARIO`.
+* **Request Body** (`CriarLivroRequest`):
+
+    ```json
+    {
+      "titulo": "Clean Code",
+      "autor": "Robert C. Martin",
+      "isbn": "9780132350884",
+      "anoPublicacao": 2008,
+      "quantidadeTotal": 10,
+      "quantidadeDisponivel": 10
+    }
+    ```
+
+#### `POST /livros/importar/{isbn}`
+
+Importa automaticamente os dados de um livro da API do Google Books e o cadastra no sistema.
+
+* **Acesso**: Autenticado. Requer Role: `BIBLIOTECARIO`.
+* **Parâmetro de URL**: `isbn` (ex: `9780132350884`).
+* **Response 200 OK** (`LivroResponse`): Retorna o livro criado com dados importados.
+
+#### `PUT /livros/{id}/estoque/decrementar`
+
+Decrementa a quantidade disponível de um livro (usado quando um empréstimo é realizado).
+
+* **Acesso**: Autenticado (Qualquer usuário logado ou serviço interno).
+* **Response 200 OK**: Dados atualizados do livro.
+
+#### `PUT /livros/{id}/estoque/incrementar`
+
+Incrementa a quantidade disponível de um livro (usado na devolução).
+
+* **Acesso**: Autenticado (Qualquer usuário logado ou serviço interno).
+* **Response 200 OK**: Dados atualizados do livro.
+
+## Detalhes de Segurança
+
+* **Resource Server**: Este serviço não gera tokens. Ele confia nos tokens assinados pelo `usuario-service`.
+* **Validação**: Utiliza a chave definida em `JWT_SECRECT_KEY` para validar a assinatura HMAC SHA-256 do token recebido.
+* **Autorização**:
+    * Rotas `GET` são públicas.
+    * Rotas de gestão (`POST`, `importar`) exigem a role `BIBLIOTECARIO` (extraída da claim `roles` do JWT).
+    * Rotas de estoque exigem apenas que o token seja válido.
+
+### Links Úteis para Aprofundamento
+
+* [Spring Boot](https://spring.io/projects/spring-boot)
+* [Spring Security OAuth2 Resource Server](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/index.html)
+* [Spring WebFlux (WebClient)](https://docs.spring.io/spring-framework/reference/web/webflux-webclient.html)
+* [Google Books API](https://developers.google.com/books)
+* [Lombok](https://projectlombok.org/)
