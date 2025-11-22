@@ -1,45 +1,51 @@
 package br.com.scripta_api.catalogo_service.exception;
 
-/*
-TODO: Anotar a classe com @RestControllerAdvice (para que ela "ouça" todos os controllers).
+import br.com.scripta_api.catalogo_service.dtos.ErrorResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-TODO: (Opcional) Criar um DTO simples, como ErroResponse(String mensagem,
- int status), para padronizar a resposta.
+import java.util.HashMap;
+import java.util.Map;
 
-TODO: Criar um método handleLivroNaoEncontrado.
-
-TODO: Anotar com @ExceptionHandler(LivroNaoEncontradoException.class).
-
-TODO: Anotar com @ResponseStatus(HttpStatus.NOT_FOUND).
-
-TODO: Fazer o método retornar um ResponseEntity<ErroResponse>
- (ou similar) com a mensagem da exceção e o status 404.
-
-TODO: Criar um método handleLivroJaCadastrado.
-
-TODO: Anotar com @ExceptionHandler(LivroJaCadastradoException.class).
-
-TODO: Anotar com @ResponseStatus(HttpStatus.CONFLICT).
-
-TODO: Fazer o método retornar o ErroResponse com a mensagem e o status 409 (Conflito).
-
-TODO: Criar um método handleEstoqueInsuficiente.
-
-TODO: Anotar com @ExceptionHandler(EstoqueInsuficienteException.class).
-
-TODO: Anotar com @ResponseStatus(HttpStatus.BAD_REQUEST).
-
-TODO: Fazer o método retornar o ErroResponse com a mensagem e o status 400 (Requisição Ruim).
-
-TODO: Criar um método handleValidationExceptions (para DTOs inválidos).
-
-TODO: Anotar com @ExceptionHandler(MethodArgumentNotValidException.class).
-
-TODO: Anotar com @ResponseStatus(HttpStatus.BAD_REQUEST).
-
-TODO: Implementar a lógica para extrair os erros de validação
- (ex: ex.getBindingResult().getFieldErrors())
- e retorná-los em um formato claro (ex: Map<String, String>).
- */
+@RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(LivroNaoEncontradoException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Livro não encontrado")
+    public ResponseEntity<ErrorResponse> handleLivroNaoEncontrado(LivroNaoEncontradoException ex) {
+        ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(LivroJaCadastradoException.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT, reason = "livro já cadastrado")
+    public ResponseEntity<ErrorResponse> handleLivroJaCadastrado(LivroJaCadastradoException ex) {
+        ErrorResponse error = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(EstoqueInsuficienteException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Estoque insuficiente")
+    public ResponseEntity<ErrorResponse> handleEstoqueInsuficiente(EstoqueInsuficienteException ex) {
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Erro de validação")
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
 }
