@@ -1,7 +1,5 @@
 package br.com.scripta_api.catalogo_service.application.domain;
 
-//TODO: Implementar lógica de negócio nos setters ou no build() (ex: quantidadeDisponivel não pode ser negativa).
-
 public class Livro {
     private Long id;
     private String titulo;
@@ -66,10 +64,7 @@ public class Livro {
         return quantidadeDsiponivel;
     }
 
-    public void setQuantidadeDisponivel(Integer quantidadeDisponivel) {
-        if(this.quantidadeDsiponivel == 0) {
-
-        }
+    public void setQuantidadeDsiponivel(Integer quantidadeDsiponivel) {
         this.quantidadeDsiponivel = quantidadeDsiponivel;
     }
 

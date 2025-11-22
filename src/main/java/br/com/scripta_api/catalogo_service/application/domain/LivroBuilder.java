@@ -1,5 +1,7 @@
 package br.com.scripta_api.catalogo_service.application.domain;
 
+import br.com.scripta_api.catalogo_service.exception.EstoqueInsuficienteException;
+
 public final class LivroBuilder {
     private final Livro livro;
 
@@ -47,6 +49,10 @@ public final class LivroBuilder {
     }
 
     public Livro build() {
+        if (livro.getQuantidadeDsiponivel() <= 0 || livro.getQuantidadeTotal() < 0) {
+            throw new EstoqueInsuficienteException("Livro sem estoque");
+        }
+
         return this.livro;
     }
 
