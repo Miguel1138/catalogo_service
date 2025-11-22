@@ -80,7 +80,8 @@ public class LivroRepository implements LivroService {
             }
         });
 
-        LivroEntity updateEntity = repository.findById(id).orElseThrow();
+        LivroEntity updateEntity = repository.findById(id)
+                .orElseThrow(() -> new LivroNaoEncontradoException("Livro não encontrado com ID: " + id));
 
         updateEntity.setId(id);
         updateEntity.setTitulo(request.getTitulo());
