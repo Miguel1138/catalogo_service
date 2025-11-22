@@ -1,11 +1,20 @@
 package br.com.scripta_api.catalogo_service.config;
 
-/*
-TODO: Anotar com @Configuration.
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 
-TODO: Injetar @Value("${api.externa.livros.url}") String baseUrl.
-
-TODO: Criar @Bean public WebClient webClient() que constrói um WebClient com esse baseUrl.
- */
+@Configuration
 public class WebClientConfig {
+
+    @Value("${api.externa.livros.url}")
+    private String baseUrl;
+
+    @Bean
+    public WebClient webClient() {
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .build();
+    }
 }
