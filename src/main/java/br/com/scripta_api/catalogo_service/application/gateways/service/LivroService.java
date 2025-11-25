@@ -6,17 +6,20 @@ import br.com.scripta_api.catalogo_service.dtos.AtualizarLivroRequest;
 import java.util.List;
 
 public interface LivroService {
+
     Livro criarLivro(Livro domain);
 
     Livro buscarPorId(Long id);
 
-    Livro atualizarLivro(Long id, AtualizarLivroRequest reques);
+    // Corrigi o nome da variável 'reques' para 'request' para ficar mais padronizado
+    Livro atualizarLivro(Long id, AtualizarLivroRequest request);
 
     List<Livro> listarLivros();
 
     List<Livro> buscar(String nomeOrAutor);
 
-    void deletarLivro(Long id);
+    // --- DEIXE APENAS ESTE ---
+    void deletar(Long id);
 
     Livro decrementarEstoque(Long id);
 

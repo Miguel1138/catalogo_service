@@ -34,38 +34,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(CorsConfiguration()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Configura o Resource Server para validar JWTs
-                .oauth2ResourceServer(oauth -> oauth
-                        .jwt(jwt -> jwt
-                                .decoder(jwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                        )
+                // --- NOVA CONFIGURAÇÃO DE CORS AQUI ---
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
+                    corsConfiguration.setAllowedOrigins(java.util.List.of("*")); // Asterisco libera tudo! // Libera seu Front
+                    corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
+                    return corsConfiguration;
+                }))
+                // --------------------------------------
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
                 )
-
-                .authorizeHttpRequests(authz -> authz
-                        // (RF-A03, RF-A04) Busca e Detalhes: Público
-                        .requestMatchers(HttpMethod.GET, "/livros", "/livros/**", "/livros/buscar").permitAll()
-
-                        // (RF-S05) Gestão de Estoque: Autenticado (qualquer role, pois é chamado por outros serviços)
-                        // NOTA: Esta regra deve vir ANTES da regra geral de PUT /livros/** para não ser bloqueada
-                        .requestMatchers(HttpMethod.PUT, "/livros/*/estoque/**").authenticated()
-
-                        // (RF-B03, RF-B06) Cadastro e Importação: Bibliotecário
-                        .requestMatchers(HttpMethod.POST, "/livros", "/livros/importar/**").hasRole("BIBLIOTECARIO")
-
-                        // (RF-B04) Edição: Bibliotecário
-                        .requestMatchers(HttpMethod.PUT, "/livros/**").hasRole("BIBLIOTECARIO")
-
-                        // (RF-B05) Remoção: Bibliotecário
-                        .requestMatchers(HttpMethod.DELETE, "/livros/**").hasRole("BIBLIOTECARIO")
-
-                        // Qualquer outra requisição deve estar autenticada
-                        .anyRequest().authenticated()
-                );
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
