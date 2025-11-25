@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
@@ -16,28 +15,28 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(LivroNaoEncontradoException.class)
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Livro não encontrado")
+    // Removido @ResponseStatus pois o ResponseEntity já define o status
     public ResponseEntity<ErrorResponse> handleLivroNaoEncontrado(LivroNaoEncontradoException ex) {
         ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @ExceptionHandler(LivroJaCadastradoException.class)
-    @ResponseStatus(value = HttpStatus.CONFLICT, reason = "livro já cadastrado")
+    // Removido @ResponseStatus
     public ResponseEntity<ErrorResponse> handleLivroJaCadastrado(LivroJaCadastradoException ex) {
         ErrorResponse error = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(EstoqueInsuficienteException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Estoque insuficiente")
+    // Removido @ResponseStatus
     public ResponseEntity<ErrorResponse> handleEstoqueInsuficiente(EstoqueInsuficienteException ex) {
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Erro de validação")
+    // Removido @ResponseStatus
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {

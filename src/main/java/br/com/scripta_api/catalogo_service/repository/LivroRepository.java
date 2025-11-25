@@ -1,6 +1,5 @@
 package br.com.scripta_api.catalogo_service.repository;
 
-
 import br.com.scripta_api.catalogo_service.application.domain.Livro;
 import br.com.scripta_api.catalogo_service.application.gateways.service.LivroService;
 import br.com.scripta_api.catalogo_service.dtos.AtualizarLivroRequest;
@@ -22,6 +21,7 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class LivroRepository implements LivroService {
+
     private final LivroMapper mapper;
     private final LivroEntityRepository repository;
 
@@ -70,27 +70,38 @@ public class LivroRepository implements LivroService {
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Livro atualizarLivro(Long id, AtualizarLivroRequest request) {
-        if (!repository.existsById(id)) {
-            throw new LivroNaoEncontradoException("Livro não encontrado com ID: " + id);
-        }
-
-        repository.findByIsbn(request.getIsbn()).ifPresent(entity -> {
-            if (!entity.getId().equals(id)) {
-                throw new LivroJaCadastradoException("ISBN " + request.getIsbn() + " já pertence a outro livro.");
-            }
-        });
-
-        LivroEntity updateEntity = repository.findById(id)
+        LivroEntity entity = repository.findById(id)
                 .orElseThrow(() -> new LivroNaoEncontradoException("Livro não encontrado com ID: " + id));
 
-        updateEntity.setId(id);
-        updateEntity.setTitulo(request.getTitulo());
-        updateEntity.setAutor(request.getAutor());
-        updateEntity.setIsbn(request.getIsbn());
-        updateEntity.setAnoPublicacao(request.getAnoPublicacao());
-        updateEntity.setQuantidadeTotal(request.getQuantidadeTotal());
+        // --- DEBUG: Ver o que está chegando ---
+        System.out.println("DEBUG ATUALIZAR:");
+        System.out.println("ID: " + id);
+        System.out.println("ISBN Banco: [" + entity.getIsbn() + "]");
+        System.out.println("ISBN Request: [" + request.getIsbn() + "]");
+        // --------------------------------------
 
-        return mapper.toDomain(updateEntity);
+        // Normaliza as strings (remove espaços extras e garante comparação segura)
+        String isbnBanco = entity.getIsbn() != null ? entity.getIsbn().trim() : "";
+        String isbnRequest = request.getIsbn() != null ? request.getIsbn().trim() : "";
+
+        // SÓ VERIFICA SE OS ISBNS FOREM REALMENTE DIFERENTES
+        if (!isbnBanco.equalsIgnoreCase(isbnRequest)) {
+            System.out.println("DEBUG: ISBNs são diferentes. Verificando duplicidade...");
+
+            if (repository.findByIsbn(isbnRequest).isPresent()) {
+                throw new LivroJaCadastradoException("O ISBN " + isbnRequest + " já pertence a outro livro.");
+            }
+        } else {
+            System.out.println("DEBUG: ISBNs iguais. Pulando verificação.");
+        }
+
+        entity.setTitulo(request.getTitulo());
+        entity.setAutor(request.getAutor());
+        entity.setIsbn(isbnRequest); // Salva o ISBN limpo (sem espaços)
+        entity.setAnoPublicacao(request.getAnoPublicacao());
+        entity.setQuantidadeTotal(request.getQuantidadeTotal());
+
+        return mapper.toDomain(repository.save(entity));
     }
 
     @Override
@@ -119,13 +130,14 @@ public class LivroRepository implements LivroService {
         return mapper.toDomain(entity);
     }
 
+    // --- CORREÇÃO AQUI ---
+    // Renomeado de deletarLivro para deletar, para coincidir com a interface e o controller
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void deletarLivro(Long id) {
+    public void deletar(Long id) {
         if (!repository.existsById(id)) {
             throw new LivroNaoEncontradoException("Livro não encontrado com ID: " + id);
         }
         repository.deleteById(id);
     }
 }
-

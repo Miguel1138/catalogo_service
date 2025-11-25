@@ -1,19 +1,14 @@
 package br.com.scripta_api.catalogo_service.controller;
 
-/*
-
-TODO: Implementar
- POST /importar/{isbn} (protegido):
- Chama integracaoService.importarLivroPorIsbn() e retorna LivroResponse.fromDomain().
- */
-
 import br.com.scripta_api.catalogo_service.api.gateways.GoogleBooksApiService;
 import br.com.scripta_api.catalogo_service.application.domain.LivroBuilder;
 import br.com.scripta_api.catalogo_service.application.gateways.service.LivroService;
+import br.com.scripta_api.catalogo_service.dtos.AtualizarLivroRequest; // <--- O IMPORT QUE FALTAVA
 import br.com.scripta_api.catalogo_service.dtos.CriarLivroRequest;
 import br.com.scripta_api.catalogo_service.dtos.LivroResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +17,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/livros")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class LivroController {
+
     private final LivroService livroService;
     private final GoogleBooksApiService apiService;
 
@@ -69,6 +66,14 @@ public class LivroController {
         );
     }
 
+    // --- AQUI ESTÁ A CORREÇÃO DO MÉTODO DE ATUALIZAR ---
+    @PutMapping("/{id}")
+    public ResponseEntity<LivroResponse> atualizarLivro(@PathVariable Long id, @RequestBody @Valid AtualizarLivroRequest request) {
+        return ResponseEntity.ok(
+                LivroResponse.fromDomain(livroService.atualizarLivro(id, request))
+        );
+    }
+
     @PutMapping("/{id}/estoque/decrementar")
     public ResponseEntity<LivroResponse> decrementarEstoque(@Valid @PathVariable("id") Long id) {
         return ResponseEntity.ok(
@@ -81,4 +86,9 @@ public class LivroController {
         return ResponseEntity.ok(LivroResponse.fromDomain(apiService.importarLivroPorIsbn(isbn)));
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletar(@PathVariable Long id) {
+        livroService.deletar(id);
+    }
 }
