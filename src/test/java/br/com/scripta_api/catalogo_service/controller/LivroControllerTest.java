@@ -4,8 +4,6 @@ import br.com.scripta_api.catalogo_service.api.gateways.GoogleBooksApiService;
 import br.com.scripta_api.catalogo_service.application.domain.Livro;
 import br.com.scripta_api.catalogo_service.application.domain.LivroBuilder;
 import br.com.scripta_api.catalogo_service.application.gateways.service.LivroService;
-import br.com.scripta_api.catalogo_service.config.SecurityConfig;
-import br.com.scripta_api.catalogo_service.dtos.CriarLivroRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

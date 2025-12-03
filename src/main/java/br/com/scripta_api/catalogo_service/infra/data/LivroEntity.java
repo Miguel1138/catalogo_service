@@ -6,26 +6,32 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
-@Entity(name = "livros")
+@Entity
 @Table(name = "livros")
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LivroEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false)
     private String titulo;
+
+    @Column(nullable = false)
     private String autor;
-    private Integer anoPublicacao;
-    @Column(nullable = false)
-    private Integer quantidadeTotal;
-    @Column(nullable = false)
-    private Integer quantidadeDisponivel;
-    @Column(nullable = false, unique = true)
+
     private String isbn;
+
+    @Column(name = "ano_publicacao")
+    private Integer anoPublicacao;
+
+    @Column(name = "quantidade_total")
+    private Integer quantidadeTotal;
+
+    @Column(name = "quantidade_disponivel")
+    private Integer quantidadeDisponivel;
 }

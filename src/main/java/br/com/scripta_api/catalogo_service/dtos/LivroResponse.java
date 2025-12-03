@@ -1,31 +1,27 @@
 package br.com.scripta_api.catalogo_service.dtos;
 
-import br.com.scripta_api.catalogo_service.application.domain.Livro;
+import br.com.scripta_api.catalogo_service.infra.data.LivroEntity;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 public class LivroResponse {
     private Long id;
     private String titulo;
     private String autor;
     private String isbn;
-    private Integer anoPublicacao;
-    private Integer quantidadeTotal;
-    private Integer quantidadeDsiponivel;
+    private Integer quantidadeDisponivel;
 
-    public static LivroResponse fromDomain(Livro domain) {
-        return LivroResponse.builder()
-                .id(domain.getId())
-                .titulo(domain.getTitulo())
-                .autor(domain.getAutor())
-                .isbn(domain.getIsbn())
-                .anoPublicacao(domain.getAnoPublicacao())
-                .quantidadeDsiponivel(domain.getQuantidadeDsiponivel())
-                .quantidadeTotal(domain.getQuantidadeTotal())
-                .build();
+    public static LivroResponse fromEntity(LivroEntity entity) {
+        return new LivroResponse(
+                entity.getId(),
+                entity.getTitulo(),
+                entity.getAutor(),
+                entity.getIsbn(),
+                entity.getQuantidadeDisponivel()
+        );
     }
 }
